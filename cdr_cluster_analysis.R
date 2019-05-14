@@ -1,7 +1,7 @@
 library("ggplot2")
 library("reshape")
 library("gridExtra")
-library(plyr)
+library("plyr")
 
 
 #install.packages("data.table")
@@ -140,7 +140,7 @@ fn.findCDRKMeans <- function(cdrActivityDF){
 # function used to perform CDR cluster analysis
 fn.cdrClusterAnalysis <- function(){
   #Data preprocessing
-  cdrAcitivityInputDF <- fn.readCallDetailRecord("F:\\BE Project\\Telecom italia\\Full dataset\\November\\sms-call-internet-mi-2013-11-07.txt")
+  cdrAcitivityInputDF <- fn.readCallDetailRecord("/media/mayur/Softwares/BE Project/DATA/sms-call-internet-mi-2013-11-07.txt")
   cdrAcitivityInputDF <- fn.deriveAdditionalFields(cdrAcitivityInputDF)
   #newdf = cdrAcitivityInputDF[, c(1,9,10,11,12)]
   
