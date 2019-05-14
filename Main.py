@@ -176,7 +176,7 @@ def Process(grid_id):
 	return final_lists
 
 if __name__ == "__main__":
-
+	'''
 	grid = 325
 	out = Process(grid)
 	
@@ -185,4 +185,4 @@ if __name__ == "__main__":
 	forecast1 = out[2]
 	
 	print(train1.head())
-
+	'''
