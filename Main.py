@@ -115,10 +115,24 @@ def Process(grid_id):
 	ax = train.plot(x='activity_hour', y='total_activity', label='train')
 	test.plot(ax=ax, x='activity_hour', y='total_activity', label='test')
 	forecast.plot(ax=ax, x='activity_hour', y='total_activity', label='model')
-	plt.savefig('{}.png'.format(grid_id))
-	# plt.savefig('plot.png')
+	plt.savefig('plot.png')
 
-	# final_lists = [train, test, forecast]
-	# return final_lists
+	mse = abs((forecast.total_activity - test.total_activity))/test.total_activity
+	mean_error = np.mean(mse)
+	accuracy = (1-mean_error)*100
+	below30 = mse[mse<0.3].count()
+	all = mse.count()
 
-Process(147)
+	result = [
+		{
+			'mean_error' : mean_error,
+			'accuracy' : accuracy,
+			'below30' : below30,
+			'all' : all
+		}
+	]
+
+	return result
+
+out = Process(147)
+print(out)
