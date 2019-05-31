@@ -6,17 +6,19 @@ import pandas as pd
 import itertools
 from itertools import product
 from sklearn.metrics import mean_squared_error
+from math import sqrt
 import matplotlib.pyplot as plt
+
 import statsmodels.api as sm
 from statsmodels.tsa.seasonal import seasonal_decompose
+
 import warnings
 warnings.filterwarnings('ignore')
 
-
-def Process(grid_id):
+def Process_Arima(grid_id):
 
 	df = pd.DataFrame({})
-	path = "/media/mayur/Softwares/BE_Project_Grp30/Processed dataset full/"
+	path = "/media/mayur/Softwares/BE_Project_Grp30/Processed datasets/"
 	for i in range(1,22):
 		if i<10:
 			df_new = pd.read_csv(path+'sms-call-internet-mi-2013-11-0{}.csv'.format(i),parse_dates=['activity_date'])
@@ -25,22 +27,20 @@ def Process(grid_id):
 		df = df.append(df_new)
 		print("File " + str(i) + " added")
 
-	print("df length : ", len(df))
 	df['activity_hour'] += 24*(df.activity_date.dt.day-1)
 
 
-	# ## Series transformation
-
+	# Series transformation
 	df_grid = df[df['square_id']==grid_id]
 	#df_grid.set_index('activity_hour', inplace=True) 
 	df_grid.drop(['square_id', 'activity_date'], axis=1, inplace=True)
 	#df_grid.to_csv('ts-grid-147.csv', index=False, encoding='utf-8')
 
-
-	# # Split dataset into train and test
+	#print("series length", len(df_grid))
+	
+	# Split dataset into train and test
 	train = df_grid[:380]
 	test = df_grid[380:]
-
 
 	train = train.set_index('activity_hour')    #Run this line once
 	test = test.set_index('activity_hour')
@@ -98,7 +98,7 @@ def Process(grid_id):
 
 
 	#Predict list
-	n = 121
+	n = 122
 	data = train.copy()
 	data['arima_model'] = best_model.fittedvalues
 	forecast = pd.DataFrame(best_model.predict(start=data.shape[0], end=data.shape[0]+n))
@@ -118,14 +118,20 @@ def Process(grid_id):
 	ax = train.plot(x='activity_hour', y='total_activity', label='train')
 	test.plot(ax=ax, x='activity_hour', y='total_activity', label='test')
 	forecast.plot(ax=ax, x='activity_hour', y='total_activity', label='model')
-	plt.savefig('Arima_{}.png'.format(grid_id))
+	plt.xlabel('Hours')
+	plt.ylabel('Total_activity')
+	plt.title('Arima model - Grid {}'.format(grid_id))
+	plt.savefig('static/images/Arima_{}.png'.format(grid_id))
 
 	rmse = sqrt(mean_squared_error(test.total_activity, forecast.total_activity))
 	mse = abs((forecast.total_activity - test.total_activity))/test.total_activity
 	mean_error = np.mean(mse)
-	accuracy = (1-mean_error)*100
 	below30 = mse[mse<0.3].count()
 	all = mse.count()
+
+	accuracy = 100-rmse
+	# accuracy = (1-mean_error)*100
+    # accuracy = (below30/all)*100
 
 	result = [
 		{
@@ -139,5 +145,5 @@ def Process(grid_id):
 
 	return result
 
-out = Process(147)
+out = Process_Arima(342)
 print(out)
