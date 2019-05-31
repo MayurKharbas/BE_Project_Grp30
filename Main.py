@@ -16,13 +16,16 @@ warnings.filterwarnings('ignore')
 def Process(grid_id):
 
 	df = pd.DataFrame({})
-	path = "/media/mayur/Softwares/BE Project/ProcessedDataset/November/"
-	for i in range(1,8):
-		df_new = pd.read_csv(path+'sms-call-internet-mi-2013-11-0{}.csv'.format(i),parse_dates=['activity_date'])
+	path = "/media/mayur/Softwares/BE_Project_Grp30/Processed dataset full/"
+	for i in range(1,22):
+		if i<10:
+			df_new = pd.read_csv(path+'sms-call-internet-mi-2013-11-0{}.csv'.format(i),parse_dates=['activity_date'])
+		else:
+			df_new = pd.read_csv(path+'sms-call-internet-mi-2013-11-{}.csv'.format(i),parse_dates=['activity_date'])
 		df = df.append(df_new)
 		print("File " + str(i) + " added")
 
-
+	print("df length : ", len(df))
 	df['activity_hour'] += 24*(df.activity_date.dt.day-1)
 
 
@@ -35,8 +38,8 @@ def Process(grid_id):
 
 
 	# # Split dataset into train and test
-	train = df_grid[:125]
-	test = df_grid[125:]
+	train = df_grid[:380]
+	test = df_grid[380:]
 
 
 	train = train.set_index('activity_hour')    #Run this line once
@@ -95,7 +98,7 @@ def Process(grid_id):
 
 
 	#Predict list
-	n = 41
+	n = 121
 	data = train.copy()
 	data['arima_model'] = best_model.fittedvalues
 	forecast = pd.DataFrame(best_model.predict(start=data.shape[0], end=data.shape[0]+n))
@@ -115,8 +118,9 @@ def Process(grid_id):
 	ax = train.plot(x='activity_hour', y='total_activity', label='train')
 	test.plot(ax=ax, x='activity_hour', y='total_activity', label='test')
 	forecast.plot(ax=ax, x='activity_hour', y='total_activity', label='model')
-	plt.savefig('plot.png')
+	plt.savefig('Arima_{}.png'.format(grid_id))
 
+	rmse = sqrt(mean_squared_error(test.total_activity, forecast.total_activity))
 	mse = abs((forecast.total_activity - test.total_activity))/test.total_activity
 	mean_error = np.mean(mse)
 	accuracy = (1-mean_error)*100
@@ -125,6 +129,7 @@ def Process(grid_id):
 
 	result = [
 		{
+			'rmse' : rmse,
 			'mean_error' : mean_error,
 			'accuracy' : accuracy,
 			'below30' : below30,
